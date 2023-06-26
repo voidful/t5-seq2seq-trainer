@@ -69,13 +69,16 @@ nlgeval = NLGEval(no_skipthoughts=True, no_glove=True, metrics_to_omit=["METEOR"
 
 def compute_metrics_fn(predictions, labels):
     result_dict = {}
-    print("pred_result")
-    print("=================================")
-    for i in range(10):
-        print("target:" + labels[i])
-        print("pred:" + predictions[i])
-        print("-----------------")
-    print("=================================")
+    
+    with open("output.txt", "w") as f:
+        print("pred_result", file=f)
+        print("=================================", file=f)
+        for i in range(1000):
+            if labels[i] != "":
+                print("target:" + labels[i], file=f)
+                print("pred:" + predictions[i], file=f)
+                print("-----------------", file=f)
+        print("=================================", file=f)
     # cal em f1
     em_list = []
     f1_list = []
@@ -98,5 +101,5 @@ def compute_metrics_fn(predictions, labels):
     result_dict.update({"cer": cer, "wer": wer})
 
     # cal bleu rouge score
-    result_dict.update(nlgeval.compute_metrics(ref_list=list(map(list, zip(*labels))), hyp_list=predictions))
+    # result_dict.update(nlgeval.compute_metrics(ref_list=list(map(list, zip(*labels))), hyp_list=predictions))
     return result_dict

@@ -14,6 +14,9 @@ from module.eval_metric import compute_metrics_fn
 tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-large")
 model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-large")
 
+# tokenizer = AutoTokenizer.from_pretrained("./training_output/Hubert/checkpoint-65699")
+# model = AutoModelForSeq2SeqLM.from_pretrained("./training_output/Hubert/checkpoint-65699")
+
 training_args = Seq2SeqTrainingArguments(
     output_dir="./training_output",
     num_train_epochs=20,
@@ -25,6 +28,10 @@ training_args = Seq2SeqTrainingArguments(
     logging_steps=10,
     evaluation_strategy="epoch",
     save_strategy="epoch",
+    save_total_limit=5,
+    predict_with_generate=True,
+    learning_rate=5e-5,
+    bf16=True,
     save_total_limit=10,
     learning_rate=5e-4,
     gradient_accumulation_steps=4,
@@ -42,9 +49,8 @@ def compute_metrics_middle_fn(eval_pred):
     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
     return compute_metrics_fn(decoded_preds, decoded_labels)
 
-
-# def preprocess_logits_for_metrics(logits, labels):
-#     return logits.argmax(dim=-1)
+def preprocess_logits_for_metrics(logits, labels):
+    return logits.argmax(dim=-1)
 
 
 # Create the trainer
@@ -58,7 +64,6 @@ trainer = Seq2SeqTrainer(
     compute_metrics=compute_metrics_middle_fn,
     # preprocess_logits_for_metrics=preprocess_logits_for_metrics
 )
-
 # Start training
 trainer.train()
 eval_results = trainer.evaluate()
